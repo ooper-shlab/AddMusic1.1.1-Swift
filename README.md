@@ -13,7 +13,7 @@ You should not contact to Apple or SHLab(jp) about any faults caused by my trans
 ===========================================================================
 BUILD REQUIREMENTS:
 
-Xcode 6.3 beta4, iOS SDK 8.3
+Xcode 6.3, iOS SDK 8.3
 
 ===========================================================================
 RUNTIME REQUIREMENTS:

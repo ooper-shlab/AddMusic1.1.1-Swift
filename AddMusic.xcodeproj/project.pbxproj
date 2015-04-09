@@ -16,14 +16,12 @@
 		0AA6AE310FB773F6008185AA /* MainView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0AA6AE2B0FB773F6008185AA /* MainView.xib */; };
 		0AA6AE320FB773F6008185AA /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0AA6AE2D0FB773F6008185AA /* MainWindow.xib */; };
 		0AB904010FB4D1A5004C88C3 /* sound.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0AB904000FB4D1A5004C88C3 /* sound.caf */; };
-		0AB9044B0FB4E0CB004C88C3 /* ReadMe.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0AB9044A0FB4E0CB004C88C3 /* ReadMe.txt */; };
 		0ADFA0840FABA7250020C909 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ADFA0830FABA7250020C909 /* AudioToolbox.framework */; };
 		0ADFA09E0FABA9DF0020C909 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ADFA09D0FABA9DF0020C909 /* AVFoundation.framework */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		58D3B0100F9FE329006F1B20 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58D3B00F0F9FE329006F1B20 /* MediaPlayer.framework */; };
-		D75859FD1AD193B20068B31A /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D75859FC1AD193B20068B31A /* README.md */; };
 		D7CE33A31AD132F300A05CAB /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D7CE33A21AD132F300A05CAB /* Default-568h@2x.png */; };
 		D7CE33A91AD148AC00A05CAB /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CE33A81AD148AC00A05CAB /* MainViewController.swift */; };
 		D7CE33AB1AD14B5D00A05CAB /* MusicTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CE33AA1AD14B5D00A05CAB /* MusicTableViewController.swift */; };
@@ -193,7 +191,6 @@
 				0AA441400FB2865E006FAACB /* background.png in Resources */,
 				0A6C6CC00FB396DB00F95575 /* Default.png in Resources */,
 				0AB904010FB4D1A5004C88C3 /* sound.caf in Resources */,
-				0AB9044B0FB4E0CB004C88C3 /* ReadMe.txt in Resources */,
 				0AA6AE310FB773F6008185AA /* MainView.xib in Resources */,
 				0AA6AE320FB773F6008185AA /* MainWindow.xib in Resources */,
 				0A1C086A0FB7876600C7BA1B /* Localizable.strings in Resources */,
@@ -211,7 +208,6 @@
 			files = (
 				D7CE33A91AD148AC00A05CAB /* MainViewController.swift in Sources */,
 				D7CE33AD1AD153C100A05CAB /* AddMusicAppDelegate.swift in Sources */,
-				D75859FD1AD193B20068B31A /* README.md in Sources */,
 				D7CE33AB1AD14B5D00A05CAB /* MusicTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
