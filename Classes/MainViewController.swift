@@ -131,7 +131,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
                 self.appSoundPlayer.pause()
                 NSLog("Output device removed, so application audio was paused.")
                 
-                if NSClassFromString("UIAlertControler") != nil {
+                if #available(iOS 8.0, *) {
                     let routeChangeAlert =
                     UIAlertController(title: NSLocalizedString("Playback Paused", comment: "Title for audio hardware route-changed alert view"),
                         message: NSLocalizedString("Audio output was changed", comment: "Explanation for route-changed alert view"),
@@ -225,7 +225,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
                 
                 // apply the new media item collection as a playback queue for the music player
                 self.userMediaItemCollection = mediaItemCollection
-                musicPlayer.setQueueWithItemCollection(userMediaItemCollection)
+                musicPlayer.setQueueWithItemCollection(userMediaItemCollection!)
                 self.playedMusicOnce = true
                 musicPlayer.play()
                 
@@ -245,14 +245,14 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
                 let currentPlaybackTime = musicPlayer.currentPlaybackTime
                 
                 // Combine the previously-existing media item collection with the new one
-                var combinedMediaItems = userMediaItemCollection!.items!
-                let newMediaItems = mediaItemCollection!.items!
+                var combinedMediaItems = userMediaItemCollection!.items
+                let newMediaItems = mediaItemCollection!.items
                 combinedMediaItems += newMediaItems
                 
                 self.userMediaItemCollection = MPMediaItemCollection(items: combinedMediaItems)
                 
                 // Apply the new media item collection as a playback queue for the music player.
-                musicPlayer.setQueueWithItemCollection(userMediaItemCollection)
+                musicPlayer.setQueueWithItemCollection(userMediaItemCollection!)
                 
                 // Restore the now-playing item and its current playback time.
                 musicPlayer.nowPlayingItem = nowPlayingItem
@@ -299,7 +299,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     // Invoked when the user taps the Done button in the media item picker after having chosen
     //		one or more media items to play.
-    func mediaPicker(mediaPicker: MPMediaPickerController!, didPickMediaItems mediaItemCollection: MPMediaItemCollection!) {
+    func mediaPicker(mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
         
         // Dismiss the media item picker.
         self.dismissViewControllerAnimated(true, completion: nil)
@@ -312,7 +312,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     // Invoked when the user taps the Done button in the media item picker having chosen zero
     //		media items to play
-    func mediaPickerDidCancel(mediaPicker: MPMediaPickerController!) {
+    func mediaPickerDidCancel(mediaPicker: MPMediaPickerController) {
         
         self.dismissViewControllerAnimated(true, completion: nil)
         
@@ -433,13 +433,13 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     //MARK: AV Foundation delegate methods____________
     
-    func audioPlayerDidFinishPlaying(player: AVAudioPlayer!, successfully flag: Bool) {
+    func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
         
         playing = false
         appSoundButton.enabled = true
     }
     
-    func audioPlayerBeginInterruption(player: AVAudioPlayer!) {
+    func audioPlayerBeginInterruption(player: AVAudioPlayer) {
         
         NSLog("Interrupted. The system has paused audio playback.")
         
@@ -450,13 +450,16 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         }
     }
     
-    func audioPlayerEndInterruption(player: AVAudioPlayer!) {
+    func audioPlayerEndInterruption(player: AVAudioPlayer) {
         
         NSLog("Interruption ended. Resuming audio playback.")
         
-        // Reactivates the audio session, whether or not audio was playing
-        //		when the interruption arrived.
-        AVAudioSession.sharedInstance().setActive(true, error: nil)
+        do {
+            // Reactivates the audio session, whether or not audio was playing
+            //		when the interruption arrived.
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch _ {
+        }
         
         if interruptedOnPlayback {
             
@@ -493,16 +496,19 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             ofType: "caf")!
         
         // Converts the sound's file path to an NSURL object
-        let newURL = NSURL(fileURLWithPath: soundFilePath)!
+        let newURL = NSURL(fileURLWithPath: soundFilePath)
         self.soundFileURL = newURL
         
-        // Registers this class as the delegate of the audio session.
-        //###AVAudioSessionDelegate is deprecated.
+        do {
+            // Registers this class as the delegate of the audio session.
+            //###AVAudioSessionDelegate is deprecated.
         
-        // The AmbientSound category allows application audio to mix with Media Player
-        // audio. The category also indicates that application audio should stop playing
-        // if the Ring/Siilent switch is set to "silent" or the screen locks.
-        AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryAmbient, error: nil)
+            // The AmbientSound category allows application audio to mix with Media Player
+            // audio. The category also indicates that application audio should stop playing
+            // if the Ring/Siilent switch is set to "silent" or the screen locks.
+            try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryAmbient)
+        } catch _ {
+        }
         /*
         // Use this code instead to allow the app sound to continue to play when the screen is locked.
         AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, error: nil)
@@ -520,11 +526,18 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         
         // Activates the audio session.
         
-        var activationError: NSError? = nil
-        AVAudioSession.sharedInstance().setActive(true, error: &activationError)
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+        }
         
         // Instantiates the AVAudioPlayer object, initializing it with the sound
-        let newPlayer = AVAudioPlayer(contentsOfURL: soundFileURL, error: nil)
+        let newPlayer: AVAudioPlayer!
+        do {
+            newPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)
+        } catch _ {
+            newPlayer = nil
+        }
         self.appSoundPlayer = newPlayer
         
         // "Preparing to play" attaches to the audio hardware and ensures that playback

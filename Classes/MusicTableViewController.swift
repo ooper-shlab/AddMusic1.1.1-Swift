@@ -115,7 +115,7 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
     
     
     // Responds to the user tapping Done after choosing music.
-    func mediaPicker(mediaPicker: MPMediaPickerController!, didPickMediaItems mediaItemCollection: MPMediaItemCollection!) {
+    func mediaPicker(mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
         
         self.dismissViewControllerAnimated(true, completion: nil)
         self.delegate?.updatePlayerQueueWithMediaCollection(mediaItemCollection)
@@ -126,7 +126,7 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
     
     
     // Responds to the user tapping done having chosen no music.
-    func mediaPickerDidCancel(mediaPicker: MPMediaPickerController!) {
+    func mediaPickerDidCancel(mediaPicker: MPMediaPickerController) {
         
         self.dismissViewControllerAnimated(true, completion: nil)
         
@@ -150,7 +150,7 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell? {
         
         let row = indexPath.row
-        var cell = tableView.dequeueReusableCellWithIdentifier(kCellIdentifier) as! UITableViewCell?
+        var cell = tableView.dequeueReusableCellWithIdentifier(kCellIdentifier) as UITableViewCell?
         
         if cell == nil {
             
@@ -160,7 +160,7 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
         
         let mainViewController = self.delegate as! MainViewController?
         let currentQueue = mainViewController?.userMediaItemCollection
-        if let anItem = currentQueue?.items[row] as! MPMediaItem? {
+        if let anItem = currentQueue?.items[row] as MPMediaItem? {
             
             cell!.textLabel!.text = anItem.valueForProperty(MPMediaItemPropertyTitle) as! String?
         }
