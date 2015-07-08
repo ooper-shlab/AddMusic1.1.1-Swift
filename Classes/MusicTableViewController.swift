@@ -92,14 +92,14 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
     
     
     // When the user taps Done, invokes the delegate's method that dismisses the table view.
-    @IBAction func doneShowingMusicList(AnyObject) {
+    @IBAction func doneShowingMusicList(_: AnyObject) {
         
         self.delegate?.musicTableViewControllerDidFinish(self)
     }
     
     
     // Configures and displays the media item picker.
-    @IBAction func showMediaPicker(AnyObject) {
+    @IBAction func showMediaPicker(_: AnyObject) {
         
         let picker =
         MPMediaPickerController(mediaTypes: .AnyAudio)

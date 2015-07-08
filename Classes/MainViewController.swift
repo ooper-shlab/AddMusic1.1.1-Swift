@@ -168,7 +168,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     // A toggle control for playing or pausing iPod library music playback, invoked
     //		when the user taps the 'playBarButton' in the Navigation bar.
-    @IBAction func playOrPauseMusic(AnyObject) {
+    @IBAction func playOrPauseMusic(_: AnyObject) {
         
         let playbackState = musicPlayer!.playbackState
         
@@ -181,7 +181,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     // If there is no selected media item collection, display the media item picker. If there's
     // already a selected collection, display the list of selected songs.
-    @IBAction func AddMusicOrShowMusic(AnyObject) {
+    @IBAction func AddMusicOrShowMusic(_: AnyObject) {
         
         // if the user has already chosen some music, display that list
         if userMediaItemCollection != nil {
@@ -406,7 +406,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     //MARK: Application playback control_________________
     
-    @IBAction func playAppSound(AnyObject) {
+    @IBAction func playAppSound(_: AnyObject) {
         
         appSoundPlayer.play()
         playing = true
