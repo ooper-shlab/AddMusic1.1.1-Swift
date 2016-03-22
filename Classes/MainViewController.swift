@@ -98,7 +98,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     //
     //		The system takes care of iPod audio pausing during route changes--this callback
     //		is not involved with pausing playback of iPod audio.
-    func handle_RouteChangeNotification(notification: NSNotification) {
+    @objc func handle_RouteChangeNotification(notification: NSNotification) {
         
         // ensure that this callback was invoked for a route change
         if notification.name != AVAudioSessionRouteChangeNotification { return }
@@ -519,7 +519,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         
         // Registers the audio route change listener callback function
         NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "handle_RouteChangeNotification",
+            selector: #selector(MainViewController.handle_RouteChangeNotification(_:)),
             //###Posted on the main thread when the system’s audio route changes.
             name: AVAudioSessionRouteChangeNotification,
             object: nil)
@@ -554,12 +554,12 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         let notificationCenter = NSNotificationCenter.defaultCenter()
         
         notificationCenter.addObserver(self,
-            selector: "handle_NowPlayingItemChanged:",
+            selector: #selector(MainViewController.handle_NowPlayingItemChanged(_:)),
             name: MPMusicPlayerControllerNowPlayingItemDidChangeNotification,
             object: musicPlayer)
         
         notificationCenter.addObserver(self,
-            selector: "handle_PlaybackStateChanged:",
+            selector: #selector(MainViewController.handle_PlaybackStateChanged(_:)),
             name: MPMusicPlayerControllerPlaybackStateDidChangeNotification,
             object: musicPlayer)
         
@@ -604,11 +604,11 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         
         self.playBarButton = UIBarButtonItem(barButtonSystemItem: .Play,
             target: self,
-            action: "playOrPauseMusic:")
+            action: #selector(MainViewController.playOrPauseMusic(_:)))
         
         self.pauseBarButton = UIBarButtonItem(barButtonSystemItem: .Pause,
             target: self,
-            action: "playOrPauseMusic:")
+            action: #selector(MainViewController.playOrPauseMusic(_:)))
         
         addOrShowMusicButton.setTitle(NSLocalizedString("Add Music", comment: "Title for 'Add Music' button, before user has chosen some music"),
             forState: .Normal)
@@ -652,7 +652,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         //		application that is doing something else while iPod music is playing.
         self.backgroundColorTimer = NSTimer.scheduledTimerWithTimeInterval(3.5,
             target: self,
-            selector: "updateBackgroundColor",
+            selector: #selector(MainViewController.updateBackgroundColor),
             userInfo: nil,
             repeats: true)
     }
