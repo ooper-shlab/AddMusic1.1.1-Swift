@@ -75,11 +75,11 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     var userMediaItemCollection: MPMediaItemCollection?	// the media item collection created by the user, using the media item picker
     var musicPlayer: MPMusicPlayerController!				// the music player, which plays media items from the iPod library
     var noArtworkImage: UIImage!				// an image to display when a media item has no associated artwork
-    var backgroundColorTimer: NSTimer!		// a timer for changing the background color -- represents an application that is
+    var backgroundColorTimer: Timer!		// a timer for changing the background color -- represents an application that is
     //										//		doing something else while iPod music is playing
     
     var appSoundPlayer: AVAudioPlayer!				// An AVAudioPlayer object for playing application sound
-    var soundFileURL: NSURL!				// The path to the application sound
+    var soundFileURL: URL!				// The path to the application sound
     @IBOutlet var appSoundButton: UIButton!				// the button to invoke playback for the application sound
     @IBOutlet var addOrShowMusicButton: UIButton!		// the button for invoking the media item picker. if the user has already
     //										//		specified a media item collection, the title changes to "Show Music" and
@@ -98,10 +98,10 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     //
     //		The system takes care of iPod audio pausing during route changes--this callback
     //		is not involved with pausing playback of iPod audio.
-    @objc func handle_RouteChangeNotification(notification: NSNotification) {
+    @objc func handle_RouteChangeNotification(_ notification: Notification) {
         
         // ensure that this callback was invoked for a route change
-        if notification.name != AVAudioSessionRouteChangeNotification { return }
+        if notification.name != NSNotification.Name.AVAudioSessionRouteChange { return }
         
         // This callback, being outside the implementation block, needs a reference to the
         //		MainViewController object, which it receives in the inUserData parameter.
@@ -109,7 +109,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         //		AudioSessionAddPropertyListener).
         
         // if application sound is not playing, there's nothing to do, so return.
-        if !self.appSoundPlayer.playing {
+        if !self.appSoundPlayer.isPlaying {
             
             NSLog("Audio route change while application audio is stopped.")
             return
@@ -119,14 +119,14 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             // Determines the reason for the route change, to ensure that it is not
             //		because of a category change.
             
-            let routeChangeReasonRaw = notification.userInfo![AVAudioSessionRouteChangeReasonKey] as! UInt
+            let routeChangeReasonRaw = (notification as NSNotification).userInfo![AVAudioSessionRouteChangeReasonKey] as! UInt
             
             let routeChangeReason = AVAudioSessionRouteChangeReason(rawValue: routeChangeReasonRaw)
             
             // "Old device unavailable" indicates that a headset was unplugged, or that the
             //	device was removed from a dock connector that supports audio output. This is
             //	the recommended test for when to pause audio.
-            if routeChangeReason == .OldDeviceUnavailable {
+            if routeChangeReason == .oldDeviceUnavailable {
                 
                 self.appSoundPlayer.pause()
                 NSLog("Output device removed, so application audio was paused.")
@@ -135,23 +135,23 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
                     let routeChangeAlert =
                     UIAlertController(title: NSLocalizedString("Playback Paused", comment: "Title for audio hardware route-changed alert view"),
                         message: NSLocalizedString("Audio output was changed", comment: "Explanation for route-changed alert view"),
-                        preferredStyle: .Alert)
-                    let cancelAction = UIAlertAction(title: NSLocalizedString("StopPlaybackAfterRouteChange", comment: "Stop button title"), style: .Cancel) {action in
+                        preferredStyle: .alert)
+                    let cancelAction = UIAlertAction(title: NSLocalizedString("StopPlaybackAfterRouteChange", comment: "Stop button title"), style: .cancel) {action in
                         self.routeChangeAlertClickedButtonAtIndex(0)
                     }
-                    let otherAction = UIAlertAction(title: NSLocalizedString("ResumePlaybackAfterRouteChange", comment: "Play button title"), style: .Default) {action in
+                    let otherAction = UIAlertAction(title: NSLocalizedString("ResumePlaybackAfterRouteChange", comment: "Play button title"), style: .default) {action in
                         self.routeChangeAlertClickedButtonAtIndex(1)
                     }
                     routeChangeAlert.addAction(cancelAction)
                     routeChangeAlert.addAction(otherAction)
-                    self.presentViewController(routeChangeAlert, animated: true, completion: nil)
+                    self.present(routeChangeAlert, animated: true, completion: nil)
                 } else {
                     let routeChangeAlertView =
                     UIAlertView(title: NSLocalizedString("Playback Paused", comment: "Title for audio hardware route-changed alert view"),
                         message: NSLocalizedString("Audio output was changed", comment: "Explanation for route-changed alert view"),
                         delegate: self,
                         cancelButtonTitle: NSLocalizedString("StopPlaybackAfterRouteChange", comment: "Stop button title"))
-                    routeChangeAlertView.addButtonWithTitle(NSLocalizedString("ResumePlaybackAfterRouteChange", comment: "Play button title"))
+                    routeChangeAlertView.addButton(withTitle: NSLocalizedString("ResumePlaybackAfterRouteChange", comment: "Play button title"))
                     routeChangeAlertView.show()
                 }
                 
@@ -172,9 +172,9 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         
         let playbackState = musicPlayer!.playbackState
         
-        if playbackState == .Stopped || playbackState == .Paused {
+        if playbackState == .stopped || playbackState == .paused {
             musicPlayer.play()
-        } else if playbackState == .Playing {
+        } else if playbackState == .playing {
             musicPlayer.pause()
         }
     }
@@ -189,15 +189,15 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             let controller = MusicTableViewController(nibName: "MusicTableView", bundle: nil)
             controller.delegate = self
             
-            controller.modalTransitionStyle = .CoverVertical
+            controller.modalTransitionStyle = .coverVertical
             
-            self.presentViewController(controller, animated: true, completion: nil)
+            self.present(controller, animated: true, completion: nil)
             
             // else, if no music is chosen yet, display the media item picker
         } else {
             
             let picker =
-            MPMediaPickerController(mediaTypes: .Music)
+            MPMediaPickerController(mediaTypes: .music)
             
             picker.delegate = self
             picker.allowsPickingMultipleItems = true
@@ -205,9 +205,9 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             
             // The media item picker uses the default UI style, so it needs a default-style
             //		status bar to match it visually
-            UIApplication.sharedApplication().setStatusBarStyle(.Default, animated: true)
+            UIApplication.shared.setStatusBarStyle(.default, animated: true)
             
-            self.presentViewController(picker, animated: true, completion: nil)
+            self.present(picker, animated: true, completion: nil)
         }
     }
     
@@ -215,7 +215,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     // Invoked by the delegate of the media item picker when the user is finished picking music.
     //		The delegate is either this class or the table view controller, depending on the
     //		state of the application.
-    func updatePlayerQueueWithMediaCollection(mediaItemCollection: MPMediaItemCollection?) {
+    func updatePlayerQueueWithMediaCollection(_ mediaItemCollection: MPMediaItemCollection?) {
         
         // Configure the music player, but only if the user chose at least one song to play
         if mediaItemCollection != nil {
@@ -225,7 +225,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
                 
                 // apply the new media item collection as a playback queue for the music player
                 self.userMediaItemCollection = mediaItemCollection
-                musicPlayer.setQueueWithItemCollection(userMediaItemCollection!)
+                musicPlayer.setQueue(with: userMediaItemCollection!)
                 self.playedMusicOnce = true
                 musicPlayer.play()
                 
@@ -236,7 +236,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
                 // Take note of whether or not the music player is playing. If it is
                 //		it needs to be started again at the end of this method.
                 var wasPlaying = false
-                if musicPlayer.playbackState == .Playing {
+                if musicPlayer.playbackState == .playing {
                     wasPlaying = true
                 }
                 
@@ -252,7 +252,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
                 self.userMediaItemCollection = MPMediaItemCollection(items: combinedMediaItems)
                 
                 // Apply the new media item collection as a playback queue for the music player.
-                musicPlayer.setQueueWithItemCollection(userMediaItemCollection!)
+                musicPlayer.setQueue(with: userMediaItemCollection!)
                 
                 // Restore the now-playing item and its current playback time.
                 musicPlayer.nowPlayingItem = nowPlayingItem
@@ -266,10 +266,10 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             
             // Finally, because the music player now has a playback queue, ensure that
             //		the music play/pause button in the Navigation bar is enabled.
-            navigationBar.topItem!.leftBarButtonItem!.enabled = true
+            navigationBar.topItem!.leftBarButtonItem!.isEnabled = true
             
             addOrShowMusicButton.setTitle(NSLocalizedString("Show Music", comment: "Alternate title for 'Add Music' button, after user has chosen some music"),
-                forState: .Normal)
+                for: UIControlState())
         }
     }
     
@@ -279,10 +279,10 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     //		launch--in which case, invoke play.
     private func restorePlaybackState() {
         
-        if musicPlayer.playbackState == .Stopped && userMediaItemCollection != nil {
+        if musicPlayer.playbackState == .stopped && userMediaItemCollection != nil {
             
             addOrShowMusicButton.setTitle(NSLocalizedString("Show Music", comment: "Alternate title for 'Add Music' button, after user has chosen some music"),
-                forState: .Normal)
+                for: UIControlState())
             
             if !playedMusicOnce {
                 
@@ -299,24 +299,24 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     // Invoked when the user taps the Done button in the media item picker after having chosen
     //		one or more media items to play.
-    func mediaPicker(mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
+    func mediaPicker(_ mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
         
         // Dismiss the media item picker.
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         
         // Apply the chosen songs to the music player's queue.
         self.updatePlayerQueueWithMediaCollection(mediaItemCollection)
         
-        UIApplication.sharedApplication().setStatusBarStyle(.LightContent, animated: true)
+        UIApplication.shared.setStatusBarStyle(.lightContent, animated: true)
     }
     
     // Invoked when the user taps the Done button in the media item picker having chosen zero
     //		media items to play
-    func mediaPickerDidCancel(mediaPicker: MPMediaPickerController) {
+    func mediaPickerDidCancel(_ mediaPicker: MPMediaPickerController) {
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         
-        UIApplication.sharedApplication().setStatusBarStyle(.LightContent, animated: true)
+        UIApplication.shared.setStatusBarStyle(.lightContent, animated: true)
     }
     
     
@@ -324,7 +324,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     //MARK: Music notification handlers__________________
     
     // When the now-playing item changes, update the media item artwork and the now-playing label.
-    func handle_NowPlayingItemChanged(notification: NSNotification!) {
+    func handle_NowPlayingItemChanged(_ notification: Notification!) {
         
         let currentItem = musicPlayer.nowPlayingItem
         
@@ -332,35 +332,35 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         var artworkImage = noArtworkImage
         
         // Get the artwork from the current media item, if it has artwork.
-        let artwork = currentItem?.valueForProperty(MPMediaItemPropertyArtwork) as! MPMediaItemArtwork?
+        let artwork = currentItem?.value(forProperty: MPMediaItemPropertyArtwork) as! MPMediaItemArtwork?
         
         // Obtain a UIImage object from the MPMediaItemArtwork object
         if artwork != nil {
-            artworkImage = artwork!.imageWithSize(CGSizeMake(30, 30))
+            artworkImage = artwork!.image(at: CGSize(width: 30, height: 30))
         }
         
         // Obtain a UIButton object and set its background to the UIImage object
-        let artworkView = UIButton(frame: CGRectMake(0, 0, 30, 30))
-        artworkView.setBackgroundImage(artworkImage, forState: .Normal)
+        let artworkView = UIButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
+        artworkView.setBackgroundImage(artworkImage, for: UIControlState())
         
         // Obtain a UIBarButtonItem object and initialize it with the UIButton object
         let newArtworkItem = UIBarButtonItem(customView: artworkView)
         self.artworkItem = newArtworkItem
         
-        artworkItem.enabled = false
+        artworkItem.isEnabled = false
         
         // Display the new media item artwork
-        navigationBar.topItem!.setRightBarButtonItem(artworkItem, animated: true)
+        navigationBar.topItem!.setRightBarButton(artworkItem, animated: true)
         
         // Display the artist and song name for the now-playing media item
         nowPlayingLabel.text =
             String(format: "%@ %@ %@ %@",
                 NSLocalizedString("Now Playing:", comment: "Label for introducing the now-playing song title and artist"),
-                currentItem?.valueForProperty(MPMediaItemPropertyTitle) as! String? ?? "",
+                currentItem?.value(forProperty: MPMediaItemPropertyTitle) as! String? ?? "",
                 NSLocalizedString("by", comment: "Article between song name and artist name"),
-                currentItem?.valueForProperty(MPMediaItemPropertyArtist) as! String? ?? "")
+                currentItem?.value(forProperty: MPMediaItemPropertyArtist) as! String? ?? "")
         
-        if musicPlayer.playbackState == .Stopped {
+        if musicPlayer.playbackState == .stopped {
             // Provide a suitable prompt to the user now that their chosen music has
             //		finished playing.
             nowPlayingLabel.text =
@@ -372,19 +372,19 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     // When the playback state changes, set the play/pause button in the Navigation bar
     //		appropriately.
-    func handle_PlaybackStateChanged(notification: NSNotification) {
+    func handle_PlaybackStateChanged(_ notification: Notification) {
         
         let playbackState = musicPlayer.playbackState
         
-        if playbackState == .Paused {
+        if playbackState == .paused {
             
             navigationBar.topItem!.leftBarButtonItem = playBarButton
             
-        } else if playbackState == .Playing {
+        } else if playbackState == .playing {
             
             navigationBar.topItem!.leftBarButtonItem = pauseBarButton
             
-        } else if playbackState == .Stopped {
+        } else if playbackState == .stopped {
             
             navigationBar.topItem!.leftBarButtonItem = playBarButton
             
@@ -395,7 +395,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         }
     }
     
-    func handle_iPodLibraryChanged(notification: NSNotification) {
+    func handle_iPodLibraryChanged(_ notification: Notification) {
         
         // Implement this method to update cached collections of media items when the
         // user performs a sync while your application is running. This sample performs
@@ -410,21 +410,21 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         
         appSoundPlayer.play()
         playing = true
-        appSoundButton.enabled = false
+        appSoundButton.isEnabled = false
     }
     
     // delegate method for the audio route change alert view; follows the protocol specified
     //	in the UIAlertViewDelegate protocol.
-    func alertView(routeChangeAlertView: UIAlertView, clickedButtonAtIndex buttonIndex: Int) {
+    func alertView(_ routeChangeAlertView: UIAlertView, clickedButtonAt buttonIndex: Int) {
         routeChangeAlertClickedButtonAtIndex(buttonIndex)
     }
-    private func routeChangeAlertClickedButtonAtIndex(buttonIndex: Int) {
+    private func routeChangeAlertClickedButtonAtIndex(_ buttonIndex: Int) {
         
         if buttonIndex == 1 {
             appSoundPlayer.play()
         } else {
             appSoundPlayer.currentTime = 0
-            appSoundButton.enabled = true
+            appSoundButton.isEnabled = true
         }
         
     }
@@ -433,13 +433,29 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     
     //MARK: AV Foundation delegate methods____________
     
-    func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         
         playing = false
-        appSoundButton.enabled = true
+        appSoundButton.isEnabled = true
     }
     
-    func audioPlayerBeginInterruption(player: AVAudioPlayer) {
+    @objc func handle_AVAudioSessionInterruption(notif: Notification) {
+        if
+            notif.name == Notification.Name.AVAudioSessionInterruption,
+            let userInfo = notif.userInfo,
+            let interruptionTypeInfo = userInfo[AVAudioSessionInterruptionTypeKey] as? NSNumber,
+            let interruptionType = AVAudioSessionInterruptionType(rawValue: interruptionTypeInfo as UInt)
+        {
+            switch interruptionType {
+            case .began:
+                audioSessionBeganInterruption()
+            case .ended:
+                audioSessionEndedInterruption()
+            }
+        }
+    }
+    private func audioSessionBeganInterruption() {
+//    func audioPlayerBeginInterruption(_ player: AVAudioPlayer) {
         
         NSLog("Interrupted. The system has paused audio playback.")
         
@@ -449,8 +465,8 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             interruptedOnPlayback = true
         }
     }
-    
-    func audioPlayerEndInterruption(player: AVAudioPlayer) {
+    private func audioSessionEndedInterruption() {
+//    func audioPlayerEndInterruption(_ player: AVAudioPlayer) {
         
         NSLog("Interruption ended. Resuming audio playback.")
         
@@ -475,9 +491,9 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     //MARK: Table view delegate methods________________
     
     // Invoked when the user taps the Done button in the table view.
-    func musicTableViewControllerDidFinish(controller: MusicTableViewController) {
+    func musicTableViewControllerDidFinish(_ controller: MusicTableViewController) {
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         self.restorePlaybackState()
     }
     
@@ -492,11 +508,11 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     private func setupApplicationAudio() {
         
         // Gets the file system path to the sound to play.
-        let soundFilePath = NSBundle.mainBundle().pathForResource("sound",
+        let soundFilePath = Bundle.main.path(forResource: "sound",
             ofType: "caf")!
         
         // Converts the sound's file path to an NSURL object
-        let newURL = NSURL(fileURLWithPath: soundFilePath)
+        let newURL = URL(fileURLWithPath: soundFilePath)
         self.soundFileURL = newURL
         
         do {
@@ -518,11 +534,14 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         */
         
         // Registers the audio route change listener callback function
-        NSNotificationCenter.defaultCenter().addObserver(self,
+        NotificationCenter.default.addObserver(self,
             selector: #selector(MainViewController.handle_RouteChangeNotification(_:)),
             //###Posted on the main thread when the system’s audio route changes.
-            name: AVAudioSessionRouteChangeNotification,
+            name: NSNotification.Name.AVAudioSessionRouteChange,
             object: nil)
+        
+        //# For interruption.
+        NotificationCenter.default.addObserver(self, selector: #selector(handle_AVAudioSessionInterruption), name: NSNotification.Name.AVAudioSessionInterruption, object: nil)
         
         // Activates the audio session.
         
@@ -534,7 +553,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         // Instantiates the AVAudioPlayer object, initializing it with the sound
         let newPlayer: AVAudioPlayer!
         do {
-            newPlayer = try AVAudioPlayer(contentsOfURL: soundFileURL)
+            newPlayer = try AVAudioPlayer(contentsOf: soundFileURL)
         } catch _ {
             newPlayer = nil
         }
@@ -551,16 +570,16 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     // To learn about notifications, see "Notifications" in Cocoa Fundamentals Guide.
     private func registerForMediaPlayerNotifications() {
         
-        let notificationCenter = NSNotificationCenter.defaultCenter()
+        let notificationCenter = NotificationCenter.default
         
         notificationCenter.addObserver(self,
             selector: #selector(MainViewController.handle_NowPlayingItemChanged(_:)),
-            name: MPMusicPlayerControllerNowPlayingItemDidChangeNotification,
+            name: NSNotification.Name.MPMusicPlayerControllerNowPlayingItemDidChange,
             object: musicPlayer)
         
         notificationCenter.addObserver(self,
             selector: #selector(MainViewController.handle_PlaybackStateChanged(_:)),
-            name: MPMusicPlayerControllerPlaybackStateDidChangeNotification,
+            name: NSNotification.Name.MPMusicPlayerControllerPlaybackStateDidChange,
             object: musicPlayer)
         
         /*
@@ -584,7 +603,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
     // Returns whether or not to use the iPod music player instead of the application music player.
     var useSystemPlayer: Bool {
         
-        if NSUserDefaults.standardUserDefaults().boolForKey(PLAYER_TYPE_PREF_KEY) {
+        if UserDefaults.standard.bool(forKey: PLAYER_TYPE_PREF_KEY) {
             return true
         } else {
             return false
@@ -602,19 +621,19 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         
         self.noArtworkImage = UIImage(named: "no_artwork.png")
         
-        self.playBarButton = UIBarButtonItem(barButtonSystemItem: .Play,
+        self.playBarButton = UIBarButtonItem(barButtonSystemItem: .play,
             target: self,
             action: #selector(MainViewController.playOrPauseMusic(_:)))
         
-        self.pauseBarButton = UIBarButtonItem(barButtonSystemItem: .Pause,
+        self.pauseBarButton = UIBarButtonItem(barButtonSystemItem: .pause,
             target: self,
             action: #selector(MainViewController.playOrPauseMusic(_:)))
         
         addOrShowMusicButton.setTitle(NSLocalizedString("Add Music", comment: "Title for 'Add Music' button, before user has chosen some music"),
-            forState: .Normal)
+            for: UIControlState())
         
         appSoundButton.setTitle(NSLocalizedString("Play App Sound", comment: "Title for 'Play App Sound' button"),
-            forState: .Normal)
+            for: UIControlState())
         
         nowPlayingLabel.text = NSLocalizedString("Instructions", comment: "Brief instructions to user, shown at launch")
         
@@ -626,12 +645,12 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             
             if musicPlayer.nowPlayingItem != nil {
                 
-                navigationBar.topItem!.leftBarButtonItem!.enabled = true
+                navigationBar.topItem!.leftBarButtonItem!.isEnabled = true
                 
                 // Update the UI to reflect the now-playing item.
                 self.handle_NowPlayingItemChanged(nil)
                 
-                if musicPlayer.playbackState == .Paused {
+                if musicPlayer.playbackState == .paused {
                     navigationBar.topItem!.leftBarButtonItem = playBarButton
                 }
             }
@@ -642,15 +661,15 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             
             // By default, an application music player takes on the shuffle and repeat modes
             //		of the built-in iPod app. Here they are both turned off.
-            musicPlayer.shuffleMode = .Off
-            musicPlayer.repeatMode = .None
+            musicPlayer.shuffleMode = .off
+            musicPlayer.repeatMode = .none
         }
         
         self.registerForMediaPlayerNotifications()
         
         // Configure a timer to change the background color. The changing color represents an
         //		application that is doing something else while iPod music is playing.
-        self.backgroundColorTimer = NSTimer.scheduledTimerWithTimeInterval(3.5,
+        self.backgroundColorTimer = Timer.scheduledTimer(timeInterval: 3.5,
             target: self,
             selector: #selector(MainViewController.updateBackgroundColor),
             userInfo: nil,
@@ -663,9 +682,9 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         UIView.beginAnimations(nil, context: nil)
         UIView.setAnimationDuration(3.0)
         
-        let redLevel = CGFloat(rand()) / CGFloat(RAND_MAX)
-        let greenLevel = CGFloat(rand()) / CGFloat(RAND_MAX)
-        let blueLevel = CGFloat(rand()) / CGFloat(RAND_MAX)
+        let redLevel = CGFloat(arc4random()) / CGFloat(RAND_MAX)
+        let greenLevel = CGFloat(arc4random()) / CGFloat(RAND_MAX)
+        let blueLevel = CGFloat(arc4random()) / CGFloat(RAND_MAX)
         
         self.view.backgroundColor = UIColor(red: redLevel,
             green: greenLevel,
@@ -696,18 +715,22 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
         MPMediaLibrary.defaultMediaLibrary().endGeneratingLibraryChangeNotifications()
         
         */
-        NSNotificationCenter.defaultCenter().removeObserver(self,
-            name: MPMusicPlayerControllerNowPlayingItemDidChangeNotification,
+        NotificationCenter.default.removeObserver(self,
+            name: NSNotification.Name.MPMusicPlayerControllerNowPlayingItemDidChange,
             object: musicPlayer)
         
-        NSNotificationCenter.defaultCenter().removeObserver(self,
-            name: MPMusicPlayerControllerPlaybackStateDidChangeNotification,
+        NotificationCenter.default.removeObserver(self,
+            name: NSNotification.Name.MPMusicPlayerControllerPlaybackStateDidChange,
             object: musicPlayer)
         
         musicPlayer.endGeneratingPlaybackNotifications()
         
-        NSNotificationCenter.defaultCenter().removeObserver(self,
-            name: AVAudioSessionRouteChangeNotification,
+        NotificationCenter.default.removeObserver(self,
+            name: Notification.Name.AVAudioSessionRouteChange,
+            object: nil)
+        //# For interruption.
+        NotificationCenter.default.removeObserver(self,
+            name: Notification.Name.AVAudioSessionInterruption,
             object: nil)
         
         backgroundColorTimer.invalidate()

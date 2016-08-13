@@ -62,15 +62,15 @@ import MediaPlayer
 protocol MusicTableViewControllerDelegate {
     
     // implemented in MainViewController.m
-    func musicTableViewControllerDidFinish(controller: MusicTableViewController)
-    func updatePlayerQueueWithMediaCollection(mediaItemCollection: MPMediaItemCollection?)
+    func musicTableViewControllerDidFinish(_ controller: MusicTableViewController)
+    func updatePlayerQueueWithMediaCollection(_ mediaItemCollection: MPMediaItemCollection?)
     
 }
 
 
 
 @objc(MusicTableViewController)
-class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegate, UITableViewDelegate {
+class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegate, UITableViewDelegate, UITableViewDataSource {
     
     private let kCellIdentifier = "Cell"
     //
@@ -87,7 +87,7 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
         
         self.addMusicButton.title = NSLocalizedString("AddMusicFromTableView", comment: "Add button shown on table view for invoking the media item picker")
         
-        self.view.backgroundColor = UIColor.groupTableViewBackgroundColor()
+        self.view.backgroundColor = UIColor.groupTableViewBackground
     }
     
     
@@ -102,35 +102,35 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
     @IBAction func showMediaPicker(_: AnyObject) {
         
         let picker =
-        MPMediaPickerController(mediaTypes: .AnyAudio)
+        MPMediaPickerController(mediaTypes: .anyAudio)
         
         picker.delegate = self
         picker.allowsPickingMultipleItems = true
         picker.prompt = NSLocalizedString("AddSongsPrompt", comment: "Prompt to user to choose some songs to play")
         
-        UIApplication.sharedApplication().setStatusBarStyle(.Default, animated: true)
+        UIApplication.shared.setStatusBarStyle(.default, animated: true)
         
-        self.presentViewController(picker, animated: true, completion: {})
+        self.present(picker, animated: true, completion: {})
     }
     
     
     // Responds to the user tapping Done after choosing music.
-    func mediaPicker(mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
+    func mediaPicker(_ mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         self.delegate?.updatePlayerQueueWithMediaCollection(mediaItemCollection)
         self.mediaItemCollectionTable.reloadData()
         
-        UIApplication.sharedApplication().setStatusBarStyle(UIStatusBarStyle.LightContent, animated: true)
+        UIApplication.shared.setStatusBarStyle(UIStatusBarStyle.lightContent, animated: true)
     }
     
     
     // Responds to the user tapping done having chosen no music.
-    func mediaPickerDidCancel(mediaPicker: MPMediaPickerController) {
+    func mediaPickerDidCancel(_ mediaPicker: MPMediaPickerController) {
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         
-        UIApplication.sharedApplication().setStatusBarStyle(UIStatusBarStyle.LightContent, animated: true)
+        UIApplication.shared.setStatusBarStyle(UIStatusBarStyle.lightContent, animated: true)
     }
     
     
@@ -140,41 +140,41 @@ class MusicTableViewController: UIViewController, MPMediaPickerControllerDelegat
     // To learn about using table views, see the TableViewSuite sample code
     //		and Table View Programming Guide for iPhone OS.
     
-    func tableView(table: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ table: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         let mainViewController = self.delegate as! MainViewController?
         let currentQueue = mainViewController?.userMediaItemCollection
         return currentQueue?.items.count ?? 0
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell? {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let row = indexPath.row
-        var cell = tableView.dequeueReusableCellWithIdentifier(kCellIdentifier) as UITableViewCell?
+        var cell = tableView.dequeueReusableCell(withIdentifier: kCellIdentifier)
         
         if cell == nil {
             
-            cell = UITableViewCell(style: UITableViewCellStyle.Default,
+            cell = UITableViewCell(style: UITableViewCellStyle.default,
                 reuseIdentifier: kCellIdentifier)
         }
         
         let mainViewController = self.delegate as! MainViewController?
         let currentQueue = mainViewController?.userMediaItemCollection
-        if let anItem = currentQueue?.items[row] as MPMediaItem? {
+        if let anItem = currentQueue?.items[row] {
             
-            cell!.textLabel!.text = anItem.valueForProperty(MPMediaItemPropertyTitle) as! String?
+            cell!.textLabel!.text = anItem.value(forProperty: MPMediaItemPropertyTitle) as! String?
         }
         
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
         
-        return cell
+        return cell!
     }
     
     //	 To conform to the Human Interface Guidelines, selections should not be persistent --
     //	 deselect the row after it has been selected.
-    func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     //MARK: Application state management_____________

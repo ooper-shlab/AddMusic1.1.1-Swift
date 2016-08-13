@@ -65,7 +65,7 @@ class AddMusicAppDelegate: NSObject, UIApplicationDelegate {
     
     
     
-    func applicationDidFinishLaunching(application: UIApplication) {
+    func applicationDidFinishLaunching(_ application: UIApplication) {
         window?.rootViewController = mainViewController
     }
     
