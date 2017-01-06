@@ -13,12 +13,12 @@ You should not contact to Apple or SHLab(jp) about any faults caused by my trans
 ===========================================================================
 BUILD REQUIREMENTS:
 
-Xcode 8 beta 4
+Xcode 8.2.1
 
 ===========================================================================
 RUNTIME REQUIREMENTS:
 
-iPhone: iPhone OS 7.0 or later
+iPhone: iOS 8.0 or later
 iPod library access is not functional in the Simulator.
 
 ===========================================================================
