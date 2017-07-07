@@ -444,7 +444,7 @@ class MainViewController: UIViewController, MPMediaPickerControllerDelegate, Mus
             notif.name == Notification.Name.AVAudioSessionInterruption,
             let userInfo = notif.userInfo,
             let interruptionTypeInfo = userInfo[AVAudioSessionInterruptionTypeKey] as? NSNumber,
-            let interruptionType = AVAudioSessionInterruptionType(rawValue: interruptionTypeInfo as UInt)
+            let interruptionType = AVAudioSessionInterruptionType(rawValue: interruptionTypeInfo as! UInt)
         {
             switch interruptionType {
             case .began:
